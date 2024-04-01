@@ -32,11 +32,25 @@ impl Resources<File> {
             AnimationArchive::open(anim_root.join("interactives").join("interactives.jar"))?;
         let pets = AnimationArchive::open(anim_root.join("pets").join("pets.jar"))?;
 
+        let default_lang = "en";
+        let locale_result = current_locale::current_locale();
+        let lang = locale_result.map_or_else(
+            |_| default_lang.to_string(),
+            |locale| {
+                let lang_code = locale.split("-").nth(0).unwrap();
+                if vec!["fr", "en", "pt", "es"].contains(&(lang_code)) {
+                    return lang_code.to_string();
+                } else {
+                    return default_lang.to_string();
+                }
+            }
+        );
+
         let translations = Translations::load(
             root.as_ref()
                 .join("contents")
                 .join("i18n")
-                .join("i18n_en.jar"),
+                .join(format!("i18n_{}.jar", lang)),
         )?;
 
         Ok(Resources {
